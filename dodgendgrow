@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dodge & Grow</title>
+  <style>
+    body {
+      text-align: center;
+      background: #0f172a;
+      color: white;
+      font-family: Arial;
+    }
+
+    canvas {
+      background: black;
+      display: block;
+      margin: auto;
+      border: 2px solid white;
+      box-shadow: 0 0 15px white;
+    }
+
+    #overlay {
+      position: fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: rgba(0,0,0,0.85);
+      display:none;
+      justify-content:center;
+      align-items:center;
+      flex-direction:column;
+    }
+
+    button {
+      padding:10px 20px;
+      font-size:16px;
+      margin-top:10px;
+      cursor:pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h2>🟩 Dodge & Grow</h2>
+<p id="score">Score: 0</p>
+
+<canvas id="game" width="400" height="400"></canvas>
+
+<div id="overlay">
+  <h1>💀 Game Over</h1>
+  <button onclick="restartGame()">Opnieuw spelen</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player, enemies, food, score, gameRunning;
+let keys = {};
+
+// ---------- INIT ----------
+function initGame() {
+  player = { x: 200, y: 200, size: 20, speed: 3 };
+
+  enemies = [];
+  food = [];
+
+  score = 0;
+  gameRunning = true;
+
+  document.getElementById("overlay").style.display = "none";
+  document.getElementById("score").innerText = "Score: 0";
+}
+
+// ---------- INPUT ----------
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+// ---------- LOOP ----------
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ---------- UPDATE ----------
+function update() {
+  if (!gameRunning) return;
+
+  // movement
+  if (keys["w"] || keys["ArrowUp"]) player.y -= player.speed;
+  if (keys["s"] || keys["ArrowDown"]) player.y += player.speed;
+  if (keys["a"] || keys["ArrowLeft"]) player.x -= player.speed;
+  if (keys["d"] || keys["ArrowRight"]) player.x += player.speed;
+
+  // boundaries
+  player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+  player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+
+  // spawn enemies
+  if (Math.random() < 0.02 + score * 0.0005) {
+    enemies.push({
+      x: Math.random() * canvas.width,
+      y: 0,
+      size: 15,
+      speed: 2 + score * 0.02
+    });
+  }
+
+  // spawn food
+  if (Math.random() < 0.01) {
+    food.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: 10
+    });
+  }
+
+  // move enemies
+  enemies.forEach(e => e.y += e.speed);
+
+  // collision enemies
+  enemies.forEach(e => {
+    if (
+      player.x < e.x + e.size &&
+      player.x + player.size > e.x &&
+      player.y < e.y + e.size &&
+      player.y + player.size > e.y
+    ) {
+      gameOver();
+    }
+  });
+
+  // collision food
+  food = food.filter(f => {
+    if (
+      player.x < f.x + f.size &&
+      player.x + player.size > f.x &&
+      player.y < f.y + f.size &&
+      player.y + player.size > f.y
+    ) {
+      score++;
+      player.size += 1; // groeit!
+      document.getElementById("score").innerText = "Score: " + score;
+      return false;
+    }
+    return true;
+  });
+
+  // cleanup enemies
+  enemies = enemies.filter(e => e.y < canvas.height);
+}
+
+// ---------- DRAW ----------
+function draw() {
+  ctx.fillStyle = "black";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // player
+  ctx.fillStyle = "lime";
+  ctx.fillRect(player.x, player.y, player.size, player.size);
+
+  // enemies
+  ctx.fillStyle = "red";
+  enemies.forEach(e => {
+    ctx.fillRect(e.x, e.y, e.size, e.size);
+  });
+
+  // food
+  ctx.fillStyle = "yellow";
+  food.forEach(f => {
+    ctx.fillRect(f.x, f.y, f.size, f.size);
+  });
+}
+
+// ---------- GAME OVER ----------
+function gameOver() {
+  gameRunning = false;
+  document.getElementById("overlay").style.display = "flex";
+}
+
+function restartGame() {
+  initGame();
+}
+
+// ---------- START ----------
+initGame();
+loop();
+</script>
+
+</body>
+</html>
