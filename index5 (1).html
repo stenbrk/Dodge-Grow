@@ -106,10 +106,6 @@
 <div id="overlay">
   <h1 id="titleText">Dodge & Survive</h1>
 
-  <div id="leaderboard"></div>
-
-  <!-- Voeg dit toe -->
-  <input type="text" id="usernameInput" placeholder="Username" maxlength="10" style="padding:5px; font-size:16px; text-align:center; margin-bottom:10px;">
 
   <div id="menuButtons">
     <button id="settingsBtn">Settings</button>
@@ -204,8 +200,8 @@ document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 document.getElementById("startBtn").onclick = () => startGame();
 
 function startGame() {
-    playerName = document.getElementById("usernameInput").value || "Player";
-    
+  playerName = "Player";
+  
   audioCtx.resume();
 
   const music = document.getElementById("bgMusic");
@@ -237,34 +233,19 @@ function startGame() {
   spawnCollectible();
 }
 
-document.getElementById("usernameInput").style.display = "none";
-
   document.getElementById("overlay").style.display = "none";
 }
 
 function gameOver() {
   gameRunning = false;
-  
-  let usernameInput = document.getElementById("usernameInput");
-playerName = usernameInput.value.trim() || "Jij";
 
-leaderboard.push({ name: playerName, score: score });
-leaderboard.sort((a, b) => b.score - a.score);
-
-updateLeaderboardUI();
-
-db.collection("leaderboard").add({
-  name: playerName,
-  score: score,
-  createdAt: firebase.firestore.FieldValue.serverTimestamp()
-});
 
   // RESET ALLE POWERUPS
   magnetActive = false;
   magnetTimer = 0;
 
   shieldActive = false;
-  shieldTimer = 0;
+  shieldTimer = 0; 
 
   coinMultiplierActive = false;
   coinMultiplierTimer = 0;
