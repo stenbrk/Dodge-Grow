@@ -105,6 +105,39 @@
 
 <div id="overlay">
   <h1 id="titleText">Dodge & Survive</h1>
+  
+  <div id="settingsOverlay" style="display:none;">
+  <h1>Settings</h1>
+
+  <label>
+    🔊 Sound:
+    <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="1">
+  </label>
+  
+  <br><br>
+
+<label>
+  👥 Players:
+  <select id="playerMode">
+    <option value="1">1 Player</option>
+    <option value="2">2 Players</option>
+  </select>
+</label>
+
+  <br><br>
+
+  <label>
+    🎮 Mode:
+    <select id="gameMode">
+      <option value="normal">Normal</option>
+      <option value="hard">Hard</option>
+    </select>
+  </label>
+
+  <br><br>
+
+  <button onclick="closeSettings()">Back</button>
+</div>
 
 
   <div id="menuButtons">
@@ -176,6 +209,18 @@ let coinMultiplierActive = false;
 let coinMultiplierTimer = 0;
 let leaderboard = [];
 let playerName = "";
+let volume = 1;
+let gameMode = "normal";
+let playerMode = "1";
+let player2 = null;
+
+function openSettings() {
+  document.getElementById("settingsOverlay").style.display = "flex";
+}
+
+function closeSettings() {
+  document.getElementById("settingsOverlay").style.display = "none";
+}
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -198,9 +243,20 @@ document.addEventListener("keydown", e => keys[e.key.toLowerCase()] = true);
 document.addEventListener("keyup", e => keys[e.key.toLowerCase()] = false);
 
 document.getElementById("startBtn").onclick = () => startGame();
+document.getElementById("settingsBtn").onclick = () => openSettings();
+document.getElementById("volumeSlider").oninput = (e) => {
+  volume = e.target.value;
+  document.getElementById("bgMusic").volume = volume;
+};
+
+document.getElementById("playerMode").onchange = (e) => {
+  playerMode = e.target.value;
+};
 
 function startGame() {
   playerName = "Player";
+  
+  playerMode = document.getElementById("playerMode").value;
   
   audioCtx.resume();
 
@@ -221,6 +277,18 @@ function startGame() {
     vx: 0,
     vy: 0
   };
+  
+  if (playerMode === "2") {
+  player2 = {
+    x: 250,
+    y: 300,
+    r: 12,
+    vx: 0,
+    vy: 0
+  };
+} else {
+  player2 = null;
+}
 
   enemies = [];
   collectibles = [];
@@ -372,10 +440,37 @@ if (shieldActive) {
 
   let accel = 0.5;
 
+// PLAYER 1
+if (playerMode === "1") {
+  // beide werken voor 1 player
   if (keys["w"] || keys["arrowup"]) player.vy -= accel;
   if (keys["s"] || keys["arrowdown"]) player.vy += accel;
   if (keys["a"] || keys["arrowleft"]) player.vx -= accel;
   if (keys["d"] || keys["arrowright"]) player.vx += accel;
+} else {
+  // 2 players
+  if (keys["w"]) player.vy -= accel;
+  if (keys["s"]) player.vy += accel;
+  if (keys["a"]) player.vx -= accel;
+  if (keys["d"]) player.vx += accel;
+}
+
+// PLAYER 2
+if (playerMode === "2" && player2) {
+  if (keys["arrowup"]) player2.vy -= accel;
+  if (keys["arrowdown"]) player2.vy += accel;
+  if (keys["arrowleft"]) player2.vx -= accel;
+  if (keys["arrowright"]) player2.vx += accel;
+
+  player2.vx *= 0.9;
+  player2.vy *= 0.9;
+
+  player2.x += player2.vx;
+  player2.y += player2.vy;
+
+  player2.x = Math.max(0, Math.min(400, player2.x));
+  player2.y = Math.max(0, Math.min(400, player2.y));
+}
 
   player.vx *= 0.9;
   player.vy *= 0.9;
@@ -388,10 +483,17 @@ if (shieldActive) {
 
   spawnTimer += 16;
 
-  let spawnRate = 2000;
+  let spawnRate;
+
+if (gameMode === "hard") {
+  spawnRate = 800;
+} else {
+  spawnRate = 2000;
+
   if (score > 5) spawnRate = 1200;
   if (score > 10) spawnRate = 800;
   if (score > 20) spawnRate = 300;
+}
 
   if (spawnTimer > spawnRate) {
   spawnTimer = 0;
@@ -408,73 +510,86 @@ if (shieldActive) {
 }
 
   enemies.forEach(e => {
-    e.y += e.speed;
+  e.y += e.speed;
 
-    let dx = player.x - e.x;
-    let dy = player.y - e.y;
-    let dist = Math.hypot(dx, dy);
+  // PLAYER 1
+  let dx1 = player.x - e.x;
+  let dy1 = player.y - e.y;
+  let dist1 = Math.hypot(dx1, dy1);
 
-    if (dist < player.r + e.r) {
-  if (!shieldActive) {
-    gameOver();
+  if (dist1 < player.r + e.r) {
+    if (!shieldActive) gameOver();
   }
-}
-  });
+
+  // PLAYER 2
+  if (player2) {
+    let dx2 = player2.x - e.x;
+    let dy2 = player2.y - e.y;
+    let dist2 = Math.hypot(dx2, dy2);
+
+    if (dist2 < player2.r + e.r) {
+      gameOver();
+    }
+  }
+});
 
   enemies = enemies.filter(e => e.y < 450);
 
   collectibles = collectibles.filter(c => {
-    let dx = player.x - c.x;
-    let dy = player.y - c.y;
-    let dist = Math.hypot(dx, dy);
 
-    if (dist < player.r + c.r) {
+  let dx1 = player.x - c.x;
+  let dy1 = player.y - c.y;
+  let dist1 = Math.hypot(dx1, dy1);
 
-  // COIN
-  if (c.type === "coin" || !c.type) {
-  if (coinMultiplierActive) {
-    score += 2;
-  } else {
-    score += 1;
+  let hitPlayer2 = false;
+  let dist2 = Infinity;
+
+  if (player2) {
+    let dx2 = player2.x - c.x;
+    let dy2 = player2.y - c.y;
+    dist2 = Math.hypot(dx2, dy2);
+    hitPlayer2 = dist2 < player2.r + c.r;
   }
-    playBeep(600, 0.1, "triangle", 0.1);
 
-    if (coinBombActive) {
-      coinsInGame--;
+  if (dist1 < player.r + c.r || hitPlayer2) {
 
-      if (coinsInGame <= 4) {
-        coinBombActive = false;
-        coinsInGame = 4;
+    // COIN
+    if (c.type === "coin" || !c.type) {
+      if (coinMultiplierActive) {
+        score += 2;
+      } else {
+        score += 1;
       }
+      playBeep(600, 0.1, "triangle", 0.1);
     }
+
+    // MAGNET
+    if (c.type === "magnet") {
+      coinMultiplierActive = true;
+      coinMultiplierTimer = 10000;
+      playBeep(300, 0.2, "sine", 0.2);
+    }
+
+    // SHIELD
+    if (c.type === "shield") {
+      shieldActive = true;
+      shieldTimer = 10000;
+      playBeep(800, 0.2, "square", 0.2);
+    }
+
+    // COINBOMB
+    if (c.type === "coinbomb") {
+      coinBombActive = true;
+      coinsInGame = 14;
+      playBeep(200, 0.3, "square", 0.3);
+    }
+
+    spawnCollectible();
+    return false;
   }
 
-  // MAGNET
-  if (c.type === "magnet") {
-  coinMultiplierActive = true;
-  coinMultiplierTimer = 10000;
-  playBeep(300, 0.2, "sine", 0.2);
-}
-
-  // SHIELD
-  if (c.type === "shield") {
-    shieldActive = true;
-    shieldTimer = 10000;
-    playBeep(800, 0.2, "square", 0.2);
-  }
-
-  // COINBOMB
-  if (c.type === "coinbomb") {
-    coinBombActive = true;
-    coinsInGame = 14;
-    playBeep(200, 0.3, "square", 0.3);
-  }
-
-  spawnCollectible();
-  return false;
-}
-    return true;
-  });
+  return true;
+});
   
   if (score >= 20 && Math.floor(score / 20) > powerupSpawnedFor20) {
   spawnPowerup();
@@ -504,6 +619,21 @@ function draw() {
   ctx.fill();
 
   ctx.restore();
+  
+  // PLAYER 2
+if (player2) {
+  ctx.save();
+
+  ctx.shadowColor = "cyan";
+  ctx.shadowBlur = 25;
+
+  ctx.fillStyle = "cyan";
+  ctx.beginPath();
+  ctx.arc(player2.x, player2.y, player2.r, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
 
   // 🔽 TIMER IN DE SPeler
   if (shieldActive) {
