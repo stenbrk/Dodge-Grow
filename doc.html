@@ -643,23 +643,48 @@ ctx.beginPath();
 ctx.arc(player.x + 4, player.y - 2, 2, 0, Math.PI * 2);
 ctx.fill();
 
-
-  ctx.restore();
+ctx.restore();
   
-  // PLAYER 2
+  // PLAYER 2 (🐰 bruine bunny)
 if (player2) {
   ctx.save();
 
-  ctx.shadowColor = "cyan";
+  ctx.shadowColor = "#C4A484";
   ctx.shadowBlur = 25;
 
-  ctx.fillStyle = "cyan";
+  // 🐰 BODY
+  ctx.fillStyle = "#C4A484";
   ctx.beginPath();
   ctx.arc(player2.x, player2.y, player2.r, 0, Math.PI * 2);
   ctx.fill();
 
+  // 🐰 OREN
+  ctx.fillStyle = "#C4A484";
+
+  // linker oor
+  ctx.beginPath();
+  ctx.ellipse(player2.x - 6, player2.y - 18, 5, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // rechter oor
+  ctx.beginPath();
+  ctx.ellipse(player2.x + 6, player2.y - 18, 5, 12, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 🐰 OOGJES
+  ctx.fillStyle = "black";
+  ctx.beginPath();
+  ctx.arc(player2.x - 4, player2.y - 2, 2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(player2.x + 4, player2.y - 2, 2, 0, Math.PI * 2);
+  ctx.fill();
+
   ctx.restore();
 }
+  
+  
 
   // 🔽 TIMER IN DE SPeler
   if (shieldActive) {
