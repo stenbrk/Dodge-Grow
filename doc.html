@@ -215,6 +215,7 @@ let playerMode = "1";
 let player2 = null;
 let coinbomb = coins;
 let coinBombTimer = 0;
+let baseSpeed;
 
 function openSettings() {
   document.getElementById("settingsOverlay").style.display = "flex";
@@ -442,6 +443,14 @@ if (shieldActive) {
 }
 
   let accel = 0.5;
+  
+  let baseSpeed;
+
+if (gameMode === "hard") {
+  baseSpeed = 8;
+} else {
+  baseSpeed = 4; // normaal langzamer
+}
 
 // PLAYER 1
 if (playerMode === "1") {
@@ -515,7 +524,7 @@ if (gameMode === "hard") {
     x: spawnX,
     y: spawnY,
     r: 8,
-    speed: 8 + score * 0.07
+    speed: baseSpeed + score * 0.07
   });
 }
 
@@ -563,40 +572,39 @@ if (gameMode === "hard") {
 
   if (dist1 < player.r + c.r || hitPlayer2) {
 
-    // COIN
-    if (c.type === "coin" || !c.type) {
-      if (coinMultiplierActive) {
-        score += 2;
-      } else {
-        score += 1;
-      }
-      playBeep(600, 0.1, "triangle", 0.1);
+  // COIN
+  if (c.type === "coin" || !c.type) {
+    if (coinMultiplierActive) {
+      score += 2;
+    } else {
+      score += 1;
     }
-
-    // MAGNET
-    if (c.type === "magnet") {
-      coinMultiplierActive = true;
-      coinMultiplierTimer = 10000;
-      playBeep(300, 0.2, "sine", 0.2);
-    }
-
-    // SHIELD
-    if (c.type === "shield") {
-      shieldActive = true;
-      shieldTimer = 10000;
-      playBeep(800, 0.2, "square", 0.2);
-    }
-
-    // COINBOMB
-    if (c.type === "coinbomb") {
-      coinBombActive = true;
-      coinsInGame = 14;
-      playBeep(200, 0.3, "square", 0.3);
-    }
-
-    spawnCollectible();
-    return false;
+    playBeep(600, 0.1, "triangle", 0.1);
   }
+
+  // MAGNET
+  if (c.type === "magnet") {
+    coinMultiplierActive = true;
+    coinMultiplierTimer = 10000;
+    playBeep(300, 0.2, "sine", 0.2);
+  }
+
+  // SHIELD
+  if (c.type === "shield") {
+    shieldActive = true;
+    shieldTimer = 10000;
+    playBeep(800, 0.2, "square", 0.2);
+  }
+
+  // COINBOMB
+  if (c.type === "coinbomb") {
+    coinBombActive = true;
+    coinsInGame = 14;
+    playBeep(200, 0.3, "square", 0.3);
+  }
+
+  return false;
+}
 
   return true;
 });
