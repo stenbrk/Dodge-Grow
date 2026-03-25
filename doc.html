@@ -214,6 +214,7 @@ let gameMode = "normal";
 let playerMode = "1";
 let player2 = null;
 let coinbomb = coins;
+let coinBombTimer = 0;
 
 function openSettings() {
   document.getElementById("settingsOverlay").style.display = "flex";
@@ -605,7 +606,24 @@ if (gameMode === "hard") {
   powerupSpawnedFor20 = Math.floor(score / 20);
 }
 
-  while (collectibles.length < coinsInGame) spawnCollectible();
+  if (coinBombActive) {
+  // blijf coins op max 14 tijdens bomb
+  while (collectibles.length < 14) {
+    spawnCollectible();
+  }
+
+  // zodra je onder 4 komt → reset
+  if (collectibles.length <= 3) {
+    coinBombActive = false;
+    coinsInGame = 4;
+  }
+
+} else {
+  // normaal gedrag
+  while (collectibles.length < 4) {
+    spawnCollectible();
+  }
+}
 
   document.getElementById("scoreDisplay").innerText =
   "Score: " + score + " | Highscore: " + highscore + " | 🪙: " + coins;
