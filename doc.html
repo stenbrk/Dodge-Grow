@@ -258,6 +258,7 @@ function startGame() {
   playerName = "Player";
   
   playerMode = document.getElementById("playerMode").value;
+  gameMode = document.getElementById("gameMode").value;
   
   audioCtx.resume();
 
@@ -487,13 +488,20 @@ if (playerMode === "2" && player2) {
   let spawnRate;
 
 if (gameMode === "hard") {
-  spawnRate = 3000;
-} else {
-  spawnRate = 2000;
+  // HARD = sneller spawnen
+  spawnRate = 1200;
 
-  if (score > 5) spawnRate = 1200;
-  if (score > 10) spawnRate = 800;
-  if (score > 20) spawnRate = 300;
+  if (score > 5) spawnRate = 800;
+  if (score > 10) spawnRate = 500;
+  if (score > 20) spawnRate = 250;
+
+} else {
+  //  NORMAL = langzamer
+  spawnRate = 2500;
+
+  if (score > 5) spawnRate = 1800;
+  if (score > 10) spawnRate = 1200;
+  if (score > 20) spawnRate = 800;
 }
 
   if (spawnTimer > spawnRate) {
