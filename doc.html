@@ -229,13 +229,13 @@ function closeSettings() {
 
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-function playBeep(freq, duration, type="sine", volume=0.1) {
+function playBeep(freq, duration, type="sine", vol=0.1) {
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
 
   osc.type = type;
   osc.frequency.value = freq;
-  gain.gain.value = volume;
+  gain.gain.value = vol * volume; // 🔹 hier volume slider factor toevoegen
 
   osc.connect(gain);
   gain.connect(audioCtx.destination);
