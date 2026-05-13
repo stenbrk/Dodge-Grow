@@ -654,29 +654,6 @@ ctx.beginPath();
 ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
 ctx.fill();
 
-// 🐰 OREN
-ctx.fillStyle = "white";
-
-// linker oor
-ctx.beginPath();
-ctx.ellipse(player.x - 6, player.y - 18, 5, 12, 0, 0, Math.PI * 2);
-ctx.fill();
-
-// rechter oor
-ctx.beginPath();
-ctx.ellipse(player.x + 6, player.y - 18, 5, 12, 0, 0, Math.PI * 2);
-ctx.fill();
-
-// 🐰 OOGJES
-ctx.fillStyle = "black";
-ctx.beginPath();
-ctx.arc(player.x - 4, player.y - 2, 2, 0, Math.PI * 2);
-ctx.fill();
-
-ctx.beginPath();
-ctx.arc(player.x + 4, player.y - 2, 2, 0, Math.PI * 2);
-ctx.fill();
-
 ctx.restore();
   
   // PLAYER 2 (🐰 bruine bunny)
@@ -692,28 +669,6 @@ if (player2) {
   ctx.arc(player2.x, player2.y, player2.r, 0, Math.PI * 2);
   ctx.fill();
 
-  // 🐰 OREN
-  ctx.fillStyle = "#C4A484";
-
-  // linker oor
-  ctx.beginPath();
-  ctx.ellipse(player2.x - 6, player2.y - 18, 5, 12, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // rechter oor
-  ctx.beginPath();
-  ctx.ellipse(player2.x + 6, player2.y - 18, 5, 12, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // 🐰 OOGJES
-  ctx.fillStyle = "black";
-  ctx.beginPath();
-  ctx.arc(player2.x - 4, player2.y - 2, 2, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.arc(player2.x + 4, player2.y - 2, 2, 0, Math.PI * 2);
-  ctx.fill();
 
   ctx.restore();
 }
@@ -756,12 +711,22 @@ if (player2) {
   ctx.stroke();
 }
 
+  enemies.forEach(e => {
+
+  ctx.save();
+
+  // 🔴 Rode glow
+  ctx.shadowColor = "red";
+  ctx.shadowBlur = 20;
+
   ctx.fillStyle = "red";
-  enemies.forEach(e=>{
-    ctx.beginPath();
-    ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
-    ctx.fill();
-  });
+
+  ctx.beginPath();
+  ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+});
 
   collectibles.forEach(c=>{
   ctx.beginPath();
@@ -806,17 +771,14 @@ if (player2) {
   // NORMAL COIN
   else {
   // 🥚 EI VORM
-  ctx.fillStyle = "violet"; // paars!
+  ctx.fillStyle = "#39FF14"; // paars!
   ctx.beginPath();
-  ctx.ellipse(c.x, c.y, 6, 8, 0, 0, Math.PI * 2);
+  ctx.ellipse(c.x, c.y, 6, 6, 0, 0, Math.PI * 2);
   ctx.fill();
-
-  // 🟡 stipjes (decoratie)
-  ctx.fillStyle = "yellow";
-  ctx.beginPath();
-  ctx.arc(c.x, c.y, 2, 0, Math.PI * 2);
-  ctx.fill();
-  }
+  
+  ctx.shadowColor = "#39FF14";
+  ctx.shadowBlur = 25;
+}
 });
 }
 
