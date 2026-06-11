@@ -18,6 +18,47 @@
     h2 {
       margin-bottom:5px;
     }
+    
+    .shop-item {
+  width: 150px;
+  padding: 15px;
+
+  background: linear-gradient(
+    180deg,
+    #1a1a1a,
+    #050505
+  );
+
+  border: 2px solid #39FF14;
+  border-radius: 12px;
+
+  color: white;
+  text-align: center;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 0 10px #39FF14,
+    inset 0 0 10px rgba(57,255,20,.3);
+
+  transition: all .2s ease;
+}
+
+.owned {
+  border-color: #00FFFF;
+
+  box-shadow:
+    0 0 15px #00FFFF;
+}
+
+.shop-item:hover {
+  transform: translateY(-4px) scale(1.05);
+
+  box-shadow:
+    0 0 15px #39FF14,
+    0 0 30px #39FF14,
+    inset 0 0 15px rgba(57,255,20,.5);
+}
 
     #ui {
       text-align:center;
@@ -79,6 +120,36 @@
       background: white;
 }
 
+#shopOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.95);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 160px);
+  gap: 15px;
+}
+
+.shop-item {
+  background: #111;
+  border: 2px solid #39FF14;
+  padding: 15px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.shop-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #39FF14;
+}
+
 #settingsBtn,
 #shopBtn {
   font-size: 14px;
@@ -138,6 +209,38 @@
   <br><br>
 
   <button onclick="closeSettings()">Back</button>
+</div>
+
+<div id="shopOverlay" style="display:none;">
+  <h1>Shop</h1>
+
+  <p>Coins: <span id="shopCoins">0</span></p>
+
+  <button onclick="buySkin('red',1)">
+    🔴 Red Skin (50)
+  </button>
+
+  <button onclick="buySkin('gold',1)">
+    🟡 Gold Skin (150)
+  </button>
+
+  <button onclick="buySkin('rainbow',1)">
+    🌈 Rainbow Skin (500)
+  </button>
+
+  <br><br>
+
+  <button onclick="buyUpgrade('speed',1)">
+    ⚡ Speed Upgrade (100)
+  </button>
+
+  <button onclick="buyUpgrade('shield',1)">
+    🛡 Start Shield (250)
+  </button>
+
+  <br><br>
+
+  <button onclick="closeShop()">Back</button>
 </div>
 
 
@@ -218,6 +321,11 @@ let coinbomb = coins;
 let coinBombTimer = 0;
 let baseSpeed;
 let playerSpeedMultiplier = 1;
+let ownedSkins = ["white"];
+let selectedSkin = "white";
+
+let speedLevel = 0;
+let startShield = false;
 
 function openSettings() {
   document.getElementById("settingsOverlay").style.display = "flex";
@@ -227,7 +335,62 @@ function closeSettings() {
   document.getElementById("settingsOverlay").style.display = "none";
 }
 
+function openShop() {
+  document.getElementById("shopOverlay").style.display = "flex";
+  document.getElementById("shopCoins").innerText = coins;
+}
+
+function closeShop() {
+  document.getElementById("shopOverlay").style.display = "none";
+}
+
+document.getElementById("shopBtn").onclick = () => openShop();
+
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function buyUpgrade(type, price) {
+
+  if (coins < price) {
+    alert("Not enough coins!");
+    return;
+  }
+
+  coins -= price;
+
+  if (type === "speed") {
+    speedLevel++;
+    playerSpeedMultiplier += 0.2;
+  }
+
+  if (type === "shield") {
+    startShield = true;
+  }
+}
+
+function buySkin(name, price) {
+
+  // al gekocht -> equippen
+  if (ownedSkins.includes(name)) {
+    selectedSkin = name;
+    alert(name + " equipped!");
+    return;
+  }
+
+  // niet genoeg coins
+  if (coins < price) {
+    alert("Niet genoeg coins!");
+    return;
+  }
+
+  // kopen
+  coins -= price;
+  ownedSkins.push(name);
+  selectedSkin = name;
+
+  alert(name + " unlocked!");
+
+  document.getElementById("shopCoins").innerText = coins;
+}
 
 function playBeep(freq, duration, type="sine", vol=0.1) {
   const osc = audioCtx.createOscillator();
@@ -276,6 +439,11 @@ function startGame() {
   });
 
   playBeep(400, 0.1, "sine", 0.1);
+  
+  if (startShield) {
+  shieldActive = true;
+  shieldTimer = 10000;
+}
 
   player = {
     x: 200,
@@ -649,7 +817,27 @@ function draw() {
   ctx.shadowBlur = 25;
 
   // 🐰 BODY
-ctx.fillStyle = "white";
+if(selectedSkin === "white")
+  ctx.fillStyle = "white";
+  
+  ctx.shadowColor = "white";
+  ctx.shadowBlur = 25;
+
+if(selectedSkin === "red")
+  ctx.fillStyle = "red";
+  
+  ctx.shadowColor = "red";
+  ctx.shadowBlur = 25;
+
+if(selectedSkin === "gold")
+  ctx.fillStyle = "gold";
+  
+  ctx.shadowColor = "#D4AF37";
+  ctx.shadowBlur = 25;
+
+if(selectedSkin === "rainbow")
+  ctx.fillStyle =
+    `hsl(${Date.now()/7 % 360},100%,50%)`;
 ctx.beginPath();
 ctx.arc(player.x, player.y, player.r, 0, Math.PI * 2);
 ctx.fill();
@@ -660,11 +848,11 @@ ctx.restore();
 if (player2) {
   ctx.save();
 
-  ctx.shadowColor = "grey";
+  ctx.shadowColor = "#C4A484";
   ctx.shadowBlur = 25;
 
   // 🐰 BODY
-  ctx.fillStyle = "grey";
+  ctx.fillStyle = "#C4A484";
   ctx.beginPath();
   ctx.arc(player2.x, player2.y, player2.r, 0, Math.PI * 2);
   ctx.fill();
@@ -770,13 +958,13 @@ if (player2) {
 
   // NORMAL COIN
   else {
-  // 🥚 EI VORM
-  ctx.fillStyle = "#39FF14"; // paars!
-  ctx.beginPath();
-  ctx.ellipse(c.x, c.y, 6, 6, 0, 0, Math.PI * 2);
-  ctx.fill();
   
-  ctx.shadowColor = "#39FF14";
+  ctx.font = "14px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("🪙", c.x, c.y);
+  
+  ctx.shadowColor = "yellow";
   ctx.shadowBlur = 25;
 }
 });
