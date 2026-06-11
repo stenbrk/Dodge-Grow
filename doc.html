@@ -137,17 +137,90 @@
   gap: 15px;
 }
 
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 160px);
+  gap: 15px;
+}
+
 .shop-item {
-  background: #111;
-  border: 2px solid #39FF14;
-  padding: 15px;
+  width: 160px;
+  padding: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: .2s;
+
+  background: linear-gradient(180deg, #111, #050505);
+
+  border: 3px solid #ff3b3b; /* default = LOCKED (rood) */
+
+  color: white;
+  text-align: center;
+
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+
+.shop-item:hover {
+  transform: scale(1.03);
+}
+
+/* STATES (ALLEEN BORDER KLEUR) */
+
+.locked {
+  border-color: #ff3b3b; /* rood */
+  box-shadow: 0 0 10px rgba(255, 59, 59, 0.4);
+}
+
+.unlocked {
+  border-color: #ff3b3b; /* groen */
+  box-shadow: 0 0 12px rgba(57, 255, 20, 0.4);
+}
+
+.equipped {
+  border-color: white; /* wit */
+  box-shadow: 0 0 15px rgba(255,255,255,0.6);
+}
+
+.shop-item:hover {
+  transform: scale(1.06);
+  box-shadow: 0 0 20px #ff3b3b;
+}
+
+.skin-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.skin-price {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.skin-state {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px;
+  border-radius: 6px;
+}
+
+/* STATES */
+.locked {
+  color: #ff4d4d;
+}
+
+.unlocked {
+  color: #00ffcc;
+}
+
+.equipped {
+  color: #ffd700;
+  text-shadow: 0 0 10px #ffd700;
 }
 
 .shop-item:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 15px #39FF14;
+  box-shadow: 0 0 15px #ff3b3b;
 }
 
 #settingsBtn,
@@ -216,29 +289,29 @@
 
   <p>Coins: <span id="shopCoins">0</span></p>
 
-  <button onclick="buySkin('red',1)">
-    🔴 Red Skin (50)
-  </button>
+  <div class="shop-grid">
 
-  <button onclick="buySkin('gold',1)">
-    🟡 Gold Skin (150)
-  </button>
+    <div class="shop-item" onclick="handleSkin('red', 50)">
+      <div class="skin-title">🔴 Red Skin</div>
+      <div class="skin-price">50 coins</div>
+      <div class="skin-state" id="state-red">LOCKED</div>
+    </div>
 
-  <button onclick="buySkin('rainbow',1)">
-    🌈 Rainbow Skin (500)
-  </button>
+    <div class="shop-item" onclick="handleSkin('gold', 150)">
+      <div class="skin-title">🟡 Gold Skin</div>
+      <div class="skin-price">150 coins</div>
+      <div class="skin-state" id="state-gold">LOCKED</div>
+    </div>
 
-  <br><br>
+    <div class="shop-item" onclick="handleSkin('rainbow', 500)">
+      <div class="skin-title">🌈 Rainbow Skin</div>
+      <div class="skin-price">500 coins</div>
+      <div class="skin-state" id="state-rainbow">LOCKED</div>
+    </div>
 
-  <button onclick="buyUpgrade('speed',1)">
-    ⚡ Speed Upgrade (100)
-  </button>
+  </div>
 
-  <button onclick="buyUpgrade('shield',1)">
-    🛡 Start Shield (250)
-  </button>
-
-  <br><br>
+  <br>
 
   <button onclick="closeShop()">Back</button>
 </div>
@@ -337,7 +410,7 @@ function closeSettings() {
 
 function openShop() {
   document.getElementById("shopOverlay").style.display = "flex";
-  document.getElementById("shopCoins").innerText = coins;
+  updateShopUI(); // 🔥 belangrijk
 }
 
 function closeShop() {
@@ -367,29 +440,53 @@ function buyUpgrade(type, price) {
   }
 }
 
-function buySkin(name, price) {
+let skinData = {
+  red: { price: 50, unlocked: false },
+  gold: { price: 150, unlocked: false },
+  rainbow: { price: 500, unlocked: false }
+};
 
-  // al gekocht -> equippen
-  if (ownedSkins.includes(name)) {
+function handleSkin(name, price) {
+
+  // ALS AL GEUNLOCKED → equip
+  if (skinData[name].unlocked) {
     selectedSkin = name;
-    alert(name + " equipped!");
+    updateShopUI();
     return;
   }
 
-  // niet genoeg coins
+  // NIET GENOEG COINS
   if (coins < price) {
-    alert("Niet genoeg coins!");
     return;
   }
 
-  // kopen
+  // UNLOCK
   coins -= price;
-  ownedSkins.push(name);
+  skinData[name].unlocked = true;
   selectedSkin = name;
 
-  alert(name + " unlocked!");
+  updateShopUI();
+}
 
+function updateShopUI() {
   document.getElementById("shopCoins").innerText = coins;
+
+  for (let key in skinData) {
+    let el = document.getElementById("state-" + key);
+
+    if (!skinData[key].unlocked) {
+      el.innerText = "LOCKED";
+      el.className = "skin-state locked";
+    } 
+    else if (selectedSkin === key) {
+      el.innerText = "EQUIPPED";
+      el.className = "skin-state equipped";
+    } 
+    else {
+      el.innerText = "UNLOCKED";
+      el.className = "skin-state unlocked";
+    }
+  }
 }
 
 function playBeep(freq, duration, type="sine", vol=0.1) {
